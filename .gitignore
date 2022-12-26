@@ -6,3 +6,7 @@
 /Advertising/.vs
 /Advertising/Advertising/obj/Debug/net6.0
 /Advertising/Advertising/obj
+/AdvertAPI/.vs/AdvertAPI
+/AdvertAPI/AdvertAPI/obj
+*.json
+/AdvertAPI/AdvertApi.Models/obj
