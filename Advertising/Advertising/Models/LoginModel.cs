@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Advertising.Models.Accounts
+namespace Advertising.Models
 {
-    public class SignupModel
+    public class LoginModel
     {
-        [Required]
+        [Required(ErrorMessage = "Email is Required")]
         [EmailAddress]
         [Display(Name = "Email")]
         public string Email { get; set; }
@@ -17,12 +17,7 @@ namespace Advertising.Models.Accounts
         [Display(Name = "Password")]
         public string Password { get; set; }
 
-        [Required]
-        [DataType(DataType.Password)]
-        [PasswordPropertyText]
-        [Compare("Password", ErrorMessage = "Passwords should match")]
-
-        [Display(Name = "Confirm Password")]
-        public string ConfirmPassowrd { get; set; }
+        [Display(Name = "Remember Me")]
+        public bool RememberMe { get; set; }
     }
 }

@@ -1,83 +1,113 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Advertising.Models;
+using Advertising.Models.Accounts;
+using Amazon.AspNetCore.Identity.Cognito;
+using Amazon.Extensions.CognitoAuthentication;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Advertising.Controllers
 {
     public class Accounts : Controller
     {
-        // GET: Accounts
-        public ActionResult Index()
+        private readonly SignInManager<CognitoUser> _signInManager;
+        private readonly UserManager<CognitoUser> _userManager;
+        private readonly CognitoUserPool _pool;
+
+        public Accounts(SignInManager<CognitoUser> signInManager, UserManager<CognitoUser> userManager, CognitoUserPool pool)
         {
-            return View();
+            _signInManager = signInManager;
+            _userManager = userManager;
+            _pool = pool;
         }
 
-        // GET: Accounts/Details/5
-        public ActionResult Details(int id)
+        [HttpGet]
+        public async Task<IActionResult> Signup()
         {
-            return View();
+            var model = new SignupModel();
+            return View(model);
         }
 
-        // GET: Accounts/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Accounts/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<IActionResult> Signup(SignupModel model)
         {
-            try
+            if (ModelState.IsValid)
             {
-                return RedirectToAction(nameof(Index));
+                var user = _pool.GetUser(model.Email);
+                if (user.Status != null)
+                {
+                    ModelState.AddModelError("User Exists", "User already exists");
+                    return View(model);
+
+                }
+                user.Attributes.Add(CognitoAttribute.Name.ToString(), model.Email);
+                var createdUser = await _userManager.CreateAsync(user, model.Password).ConfigureAwait(false);
+                if (createdUser.Succeeded)
+                {
+                    return RedirectToAction("Confirm", "Accounts");
+                }
             }
-            catch
-            {
-                return View();
-            }
+            return View(model);
         }
 
-        // GET: Accounts/Edit/5
-        public ActionResult Edit(int id)
+        [HttpGet]
+        public async Task<IActionResult> Confirm()
         {
-            return View();
+            var model = new ConfirmModel();
+            return View(model);
         }
 
-        // POST: Accounts/Edit/5
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<IActionResult> Confirm(ConfirmModel model)
         {
-            try
+            if (ModelState.IsValid)
             {
-                return RedirectToAction(nameof(Index));
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user == null)
+                {
+                    ModelState.AddModelError("NotFound", "User not found");
+                    return View(model);
+                }
+
+                var result = await (_userManager as CognitoUserManager<CognitoUser>).ConfirmSignUpAsync(user, model.Code, true).ConfigureAwait(false);
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    foreach (var item in result.Errors)
+                    {
+                        ModelState.AddModelError(item.Code, item.Description);
+                    }
+                    return View(model);
+                }
             }
-            catch
-            {
-                return View();
-            }
+            return View(model);
         }
 
-        // GET: Accounts/Delete/5
-        public ActionResult Delete(int id)
+        [HttpGet]
+        public async Task<IActionResult> Login()
         {
-            return View();
+            LoginModel loginModel = new LoginModel();
+            return View(loginModel);
         }
 
-        // POST: Accounts/Delete/5
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<IActionResult> Login(LoginModel model)
         {
-            try
+            if (ModelState.IsValid)
             {
-                return RedirectToAction(nameof(Index));
+                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    ModelState.AddModelError("Login Error", "Email and password do not match.");
+                }
             }
-            catch
-            {
-                return View();
-            }
+            return View(model);
         }
     }
 }

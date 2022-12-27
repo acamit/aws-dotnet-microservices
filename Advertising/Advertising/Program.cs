@@ -3,7 +3,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddCognitoIdentity();
-
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Accounts/Login";
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
