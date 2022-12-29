@@ -6,6 +6,6 @@ namespace AdvertAPI.Services.Interfaces
     {
         Task<string> Add(AdvertModel model);
 
-        Task<bool> Confirm(ConfirmAdvertModel model);
+        Task Confirm(ConfirmAdvertModel model);
     }
 }
