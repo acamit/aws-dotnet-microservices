@@ -1,3 +1,4 @@
+using AdvertAPI.HealthChecks;
 using AdvertAPI.Services;
 using AdvertAPI.Services.Interfaces;
 
@@ -11,6 +12,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddTransient<IAdvertStorageService, DynamoDbAdvertStorage>();
+
+builder.Services.AddHealthChecks().AddCheck<StorageHealthChecks>("Storage");
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -22,6 +26,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseHealthChecks("/health");
 app.UseAuthorization();
 
 app.MapControllers();
