@@ -4,6 +4,13 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Authors>SkillAlley</Authors>
+    <Description>This is a package to test nuget publications.</Description>
+    <RepositoryUrl>https://github.com/acamit/aws-dotnet-microservices</RepositoryUrl>
+    <PackageProjectUrl>https://www.skillalley.in/post/creating-nuget-packages</PackageProjectUrl>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <PackageId>$(AssemblyName)-SkillAlley</PackageId>
+    <Title>$(AssemblyName)-SkillAlley</Title>
   </PropertyGroup>
 
 </Project>
