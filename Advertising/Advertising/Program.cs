@@ -1,3 +1,6 @@
+using Advertising.ServiceClient;
+using Advertising.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -7,6 +10,10 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Accounts/Login";
 });
+
+builder.Services.AddTransient<IFileUploader, S3FileUploader>();
+builder.Services.AddHttpClient<IAdvertApiClient, AdvertApiClient>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
