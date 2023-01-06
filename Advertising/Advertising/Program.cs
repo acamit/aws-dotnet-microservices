@@ -1,5 +1,7 @@
 using Advertising.ServiceClient;
 using Advertising.Services;
+using Polly;
+using Polly.Extensions.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +14,24 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddTransient<IFileUploader, S3FileUploader>();
-builder.Services.AddHttpClient<IAdvertApiClient, AdvertApiClient>();
+builder.Services.AddHttpClient<IAdvertApiClient, AdvertApiClient>()
+                .AddPolicyHandler(GetRetryPolicy())
+                .AddPolicyHandler(GetCircuitBreakerPatternPolicy());
+
+IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPatternPolicy()
+{
+    // after 3 tries, stop for 30 seconds
+    return HttpPolicyExtensions.HandleTransientHttpError()
+           .CircuitBreakerAsync(3, TimeSpan.FromSeconds(30));
+}
+
+IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+{
+    // Exponential delay
+    return HttpPolicyExtensions.HandleTransientHttpError()
+            .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.NotFound)
+            .WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+}
 
 var app = builder.Build();
 

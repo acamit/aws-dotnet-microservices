@@ -6,6 +6,7 @@ using Amazon;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using AutoMapper;
+using System.Reflection;
 
 namespace AdvertAPI.Services
 {
@@ -67,6 +68,23 @@ namespace AdvertAPI.Services
                     {
                         await context.DeleteAsync(record);
                     }
+                }
+            }
+        }
+
+        public async Task<AdvertModel> GetById(string id)
+        {
+            using (var client = new AmazonDynamoDBClient(RegionEndpoint.USEast1))
+            {
+                using (var context = new DynamoDBContext(client))
+                {
+                    var record = await context.LoadAsync<AdvertDbModel>(id);
+                    if (record == null)
+                    {
+                        throw new KeyNotFoundException(id);
+                    }
+
+                    return _mapper.Map<AdvertModel>(record);
                 }
             }
         }

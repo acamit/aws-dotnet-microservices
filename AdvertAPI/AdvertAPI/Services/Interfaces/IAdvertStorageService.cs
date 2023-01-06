@@ -9,5 +9,6 @@ namespace AdvertAPI.Services.Interfaces
         Task Confirm(ConfirmAdvertModel model);
 
         Task<bool> CheckHealthAsync();
+        Task<AdvertModel> GetById(string id);
     }
 }
